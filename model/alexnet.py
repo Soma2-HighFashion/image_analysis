@@ -6,21 +6,23 @@ import numpy as np
 class AlexNet:
 
 	def __init__(self, geometry, num_classes):
-		self._init_weight(geometry, num_classes)
+		self.geometry = geometry
+		self.num_classes = num_classes
+		self._init_weight()
 
-	def _init_weight(self, geometry, num_classes):
+	def _init_weight(self):
 		# Tensor Flow Graph Input
-		self.X = tf.placeholder(tf.float32, [None, geometry[0]*geometry[1]])
-		self.y = tf.placeholder(tf.float32, [None, num_classes])
+		self.X = tf.placeholder(tf.float32, [None, self.geometry[0], self.geometry[1], 3])
+		self.y = tf.placeholder(tf.float32, [None, self.num_classes])
 		self.dropout = tf.placeholder(tf.float32)
 
 		self.weight = {
-			'Wc1': tf.Variable(tf.random_normal([3, 3, 1, 64])),
+			'Wc1': tf.Variable(shape=[3, 3, 3, 64])),
 			'Wc2': tf.Variable(tf.random_normal([3, 3, 64, 128])),
 			'Wc3': tf.Variable(tf.random_normal([3, 3, 128, 256])),
-			'Wf1': tf.Variable(tf.random_normal([4*4*256, 1024])),
+			'Wf1': tf.Variable(tf.random_normal([16*16*256, 1024])),
 			'Wf2': tf.Variable(tf.random_normal([1024, 1024])),
-			'Wout': tf.Variable(tf.random_normal([1024, num_classes]))
+			'Wout': tf.Variable(tf.random_normal([1024, self.num_classes]))
 		}
 
 		self.bias = {
@@ -29,14 +31,17 @@ class AlexNet:
 			'bc3': tf.Variable(tf.random_normal([256])),
 			'bf1': tf.Variable(tf.random_normal([1024])),
 			'bf2': tf.Variable(tf.random_normal([1024])),
-			'bout': tf.Variable(tf.random_normal([num_classes]))
+			'bout': tf.Variable(tf.random_normal([self.num_classes]))
 		}
+
+#		W = tf.get_variable("W", shape=[784, 256],
+#				           initializer=tf.contrib.layers.xavier_initializer())
 
 	def _model(self):
 		# Convolution Network
 
 		# Reshape input picture
-		input_X = tf.reshape(self.X, shape=[-1, 128, 128, 3])
+		input_X = tf.reshape(self.X, shape=[-1, self.geometry[0], self.geometry[1], 3])
 
 		# Stage 1 : Convolution -> ReLU -> Max Pooling -> Local Response Normalization -> Dropout
 		conv1 = tf.nn.conv2d(input_X, self.weight['Wc1'], strides = [1, 1, 1, 1], padding='SAME')
@@ -67,7 +72,9 @@ class AlexNet:
 		out = tf.matmul(fc2, self.weight['Wout']) + self.bias['bout']
 		return out
 
-	def train(self, mnist, learning_rate = 0.001, num_iters = 1000, batch_size=50, dropout_prob=0.5, verbose=False):
+	def train(self, X, y, learning_rate = 0.001, num_iters = 1000, batch_size=50, dropout_prob=0.5, verbose=False):
+		num_train = X.shape[0]
+
 		# Loss and Optimizer
 		pred_y = self._model()
 		cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(pred_y, self.y))
@@ -92,17 +99,21 @@ class AlexNet:
 			
 			# Train
 			for epoch in range(1, num_iters+1):
-				batch_xs, batch_ys = mnist.train.next_batch(batch_size)
+				indices = np.random.choice(num_train, batch_size, replace=True)
+				batch_xs = X[indices]
+				batch_ys = y[indices]
+
 				# Fit training data
 				sess.run(optimizer, feed_dict={self.X: batch_xs, self.y: batch_ys, self.dropout: dropout_prob})
-	
+
 				merged_summ = sess.run(merged, feed_dict={self.X: batch_xs, self.y: batch_ys, self.dropout: dropout_prob})
 				writer.add_summary(merged_summ, epoch)
 
-				if epoch & 50 == 0:
-					loss = sess.run(cost, feed_dict={self.X: batch_xs, self.y: batch_ys, self.dropout: 1.})
-					acc = sess.run(accuracy, feed_dict={self.X: batch_xs, self.y: batch_ys, self.dropout: 1.})
-					print "Epoch : ", epoch, " loss=" , loss, " Trainig Accuracy=", acc
+#				if epoch & 50 == 0:
+				check_indices = np.random.choice(num_train, 1000, replace=True)
+				loss = sess.run(cost, feed_dict={self.X: X[check_indices], self.y: y[check_indices], self.dropout: 1.})
+				acc = sess.run(accuracy, feed_dict={self.X: X[:1000], self.y: y[:1000], self.dropout: 1.})
+				print "Epoch : ", epoch, " loss=" , loss, " Training Accuracy=", acc
 			
 			print "Optimization Finishied"
 			saver.save(sess, "./tmp/alexnet_model.ckpt")

@@ -1,7 +1,6 @@
 category_data/
 checkpoint
 .ipynb_checkpoints/
-data/
 gender_data/
 *.pyc
 tmp/

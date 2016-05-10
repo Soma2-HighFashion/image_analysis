@@ -1,9 +1,10 @@
 import sys
+sys.path.append('./data')
 sys.path.append('./model')
 
 import argparse
-import input_data
-from alexnet_mnist import AlexNet
+import data
+from alexnet import AlexNet
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
@@ -25,14 +26,14 @@ if __name__ == "__main__":
 	print " -  Num Iterations : ", config.num_iters
 	print " -  Batch Size : ", config.batch_size
 	print " -  Regulizer : ", config.reg
+	print "--------------------------------------------------"
 
-	mnist = input_data.read_data_sets("./", one_hot=True)
+	dataset = data.load_gender_dataset() 
 
-	geometry = [28, 28]
-	num_classes = 10
+	model = AlexNet(dataset['geometry'], dataset['num_classes'])
+	model.train(dataset['data'], dataset['label'], 
+			learning_rate=config.learning_rate, num_iters=config.num_iters, 
+			batch_size=config.batch_size, dropout_prob=config.dropout, 
+			verbose=True)
 
-	model = AlexNet(geometry, num_classes)
-	model.train(mnist, learning_rate=config.learning_rate, num_iters=config.num_iters, 
-			batch_size=config.batch_size, dropout_prob=config.dropout, verbose=True)
-
-	model.predict(mnist.test.images, mnist.test.labels)
+#	model.predict(mnist.test.images, mnist.test.labels)
