@@ -1,0 +1,6 @@
+category_data/
+checkpoint/
+data/
+gender_data/
+*.pyc
+tmp/
