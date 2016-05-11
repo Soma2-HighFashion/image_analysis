@@ -1,6 +1,8 @@
 # coding: utf-8
 
+import time
 import tensorflow as tf
+from tensorflow.contrib.layers import xavier_initializer, xavier_initializer_conv2d
 import numpy as np
 
 class AlexNet:
@@ -8,71 +10,78 @@ class AlexNet:
 	def __init__(self, geometry, num_classes):
 		self.geometry = geometry
 		self.num_classes = num_classes
-		self._init_weight()
-
-	def _init_weight(self):
+		
 		# Tensor Flow Graph Input
 		self.X = tf.placeholder(tf.float32, [None, self.geometry[0], self.geometry[1], 3])
 		self.y = tf.placeholder(tf.float32, [None, self.num_classes])
 		self.dropout = tf.placeholder(tf.float32)
 
-		self.weight = {
-			'Wc1': tf.Variable(shape=[3, 3, 3, 64])),
-			'Wc2': tf.Variable(tf.random_normal([3, 3, 64, 128])),
-			'Wc3': tf.Variable(tf.random_normal([3, 3, 128, 256])),
-			'Wf1': tf.Variable(tf.random_normal([16*16*256, 1024])),
-			'Wf2': tf.Variable(tf.random_normal([1024, 1024])),
-			'Wout': tf.Variable(tf.random_normal([1024, self.num_classes]))
-		}
-
-		self.bias = {
-			'bc1': tf.Variable(tf.random_normal([64])),
-			'bc2': tf.Variable(tf.random_normal([128])),
-			'bc3': tf.Variable(tf.random_normal([256])),
-			'bf1': tf.Variable(tf.random_normal([1024])),
-			'bf2': tf.Variable(tf.random_normal([1024])),
-			'bout': tf.Variable(tf.random_normal([self.num_classes]))
-		}
-
-#		W = tf.get_variable("W", shape=[784, 256],
-#				           initializer=tf.contrib.layers.xavier_initializer())
-
 	def _model(self):
-		# Convolution Network
-
 		# Reshape input picture
 		input_X = tf.reshape(self.X, shape=[-1, self.geometry[0], self.geometry[1], 3])
-
+		
 		# Stage 1 : Convolution -> ReLU -> Max Pooling -> Local Response Normalization -> Dropout
-		conv1 = tf.nn.conv2d(input_X, self.weight['Wc1'], strides = [1, 1, 1, 1], padding='SAME')
-		conv1 = tf.nn.relu(tf.nn.bias_add(conv1, self.bias['bc1']))
-		conv1 = tf.nn.max_pool(conv1, ksize=[1, 2, 2, 1], strides = [1, 2, 2, 1], padding='SAME')
-		conv1 = tf.nn.lrn(conv1, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75, name='norm1')
-		conv1 = tf.nn.dropout(conv1, self.dropout)
+		conv1_name = "c1"
+		conv1 = self.__conv_relu(input_X, [3, 3, 3, 64], [64], conv1_name)
+		conv1 = self.__max_pooling(conv1, k=2, name=conv1_name)
+		conv1 = self.__local_response_norm(conv1, name=conv1_name)
+		conv1 = self.__dropout(conv1, self.dropout)
 
 		# Stage 2 : Convolution -> ReLU -> Max Pooling -> Local Response Normalization -> Dropout
-		conv2 = tf.nn.conv2d(conv1, self.weight['Wc2'], strides = [1, 1, 1, 1], padding='SAME')
-		conv2 = tf.nn.relu(tf.nn.bias_add(conv2, self.bias['bc2']))
-		conv2 = tf.nn.max_pool(conv2, ksize=[1, 2, 2, 1], strides = [1, 2, 2, 1], padding='SAME')
-		conv2 = tf.nn.lrn(conv2, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75, name='norm2')
-		conv2 = tf.nn.dropout(conv2, self.dropout)
-
+		conv2_name = "c2"
+		conv2 = self.__conv_relu(conv1, [3, 3, 64, 128], [128], conv2_name)
+		conv2 = self.__max_pooling(conv2, k=2, name=conv2_name)
+		conv2 = self.__local_response_norm(conv2, name=conv2_name)
+		conv2 = self.__dropout(conv2, self.dropout)
+		
 		# Stage 3 : Convolution -> ReLU -> Max Pooling -> Local Response Normalization -> Dropout
-		conv3 = tf.nn.conv2d(conv2, self.weight['Wc3'], strides = [1, 1, 1, 1], padding='SAME')
-		conv3 = tf.nn.relu(tf.nn.bias_add(conv3, self.bias['bc3']))
-		conv3 = tf.nn.max_pool(conv3, ksize=[1, 2, 2, 1], strides = [1, 2, 2, 1], padding='SAME')
-		conv3 = tf.nn.lrn(conv3, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75, name='norm3')
-		conv3 = tf.nn.dropout(conv3, self.dropout)
+		conv3_name = "c3"
+		conv3 = self.__conv_relu(conv2, [3, 3, 128, 256], [256], conv3_name)
+		conv3 = self.__max_pooling(conv3, k=2, name=conv3_name)
+		conv3 = self.__local_response_norm(conv3, name=conv3_name)
+		conv3 = self.__dropout(conv3, self.dropout)
 
 		# Stage 4 : Fully connected : Linear -> ReLU -> Linear
-		fc1 = tf.reshape(conv3, [-1, self.weight['Wf1'].get_shape().as_list()[0]])
-		fc1 = tf.nn.relu(tf.add(tf.matmul(fc1, self.weight['Wf1']), self.bias['bf1']))
-		fc2 = tf.nn.relu(tf.add(tf.matmul(fc1, self.weight['Wf2']), self.bias['bf2']))
+		input_conv_X = tf.reshape(conv3, [-1, 16*16*256])
 
-		out = tf.matmul(fc2, self.weight['Wout']) + self.bias['bout']
+		fc1_name = "f1"
+		fc1 = self.__fc_relu(input_conv_X, [16*16*256, 1024], [1024], fc1_name) 
+		
+		fc2_name = "f2"
+		fc2 = self.__fc_relu(fc1, [1024, 512], [512], fc2_name) 
+
+		out_name = "out"
+		out = self.__linear(fc2, [512, self.num_classes], out_name)
 		return out
 
-	def train(self, X, y, learning_rate = 0.001, num_iters = 1000, batch_size=50, dropout_prob=0.5, verbose=False):
+	def __conv_relu(self, input, kernel_shape, bias_shape, name):
+		weights = tf.get_variable("W"+name, kernel_shape, initializer=xavier_initializer_conv2d())
+		biases = tf.get_variable("b"+name, bias_shape, initializer=tf.constant_initializer(0.0))
+		conv = tf.nn.conv2d(input, weights, strides=[1, 1, 1, 1], padding='SAME', name=name+"_conv")
+		return tf.nn.relu(conv + biases)
+
+	def __max_pooling(self, input, k, name):
+		return tf.nn.max_pool(input, 
+			ksize=[1, k, k, 1], strides = [1, k, k, 1],
+			padding='SAME', name=name+"_maxpool")
+
+	def __local_response_norm(self, input, name):
+		return tf.nn.lrn(input, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75, name=name+"_lrn")
+
+	def __dropout(self, input, dropout_prob):
+		return tf.nn.dropout(input, dropout_prob)
+
+	def __linear(self, input, kernel_shape, name):
+		weights = tf.get_variable("W"+name, kernel_shape, initializer=xavier_initializer())
+		return tf.matmul(input, weights)
+
+	def __fc_relu(self, input, kernel_shape, bias_shape, name):
+		biases = tf.get_variable("b"+name, bias_shape, initializer=tf.constant_initializer(0.0))
+		return tf.nn.relu(self.__linear(input, kernel_shape, name) + biases)
+
+	def train(self, X, y, learning_rate = 0.001, num_iters = 1000, 
+			batch_size=50, dropout_prob=0.5, verbose=False):
+		
 		num_train = X.shape[0]
 
 		# Loss and Optimizer
@@ -95,25 +104,55 @@ class AlexNet:
 		with tf.Session() as sess:
 			sess.run(init)
 
-			writer = tf.train.SummaryWriter("/tmp/tb_test", sess.graph_def)
+			writer = tf.train.SummaryWriter("/tmp/tb_test", sess.graph)
 			
 			# Train
 			for epoch in range(1, num_iters+1):
+				start_time = time.time()
+
 				indices = np.random.choice(num_train, batch_size, replace=True)
 				batch_xs = X[indices]
 				batch_ys = y[indices]
 
 				# Fit training data
-				sess.run(optimizer, feed_dict={self.X: batch_xs, self.y: batch_ys, self.dropout: dropout_prob})
+				sess.run(
+					optimizer, 
+					feed_dict={
+						self.X: batch_xs, 
+						self.y: batch_ys, 
+						self.dropout: dropout_prob
+					}
+				)
 
-				merged_summ = sess.run(merged, feed_dict={self.X: batch_xs, self.y: batch_ys, self.dropout: dropout_prob})
+				merged_summ = sess.run(
+								merged, 
+								feed_dict={
+									self.X: batch_xs, 
+									self.y: batch_ys, 
+									self.dropout: dropout_prob
+								}
+							)
 				writer.add_summary(merged_summ, epoch)
 
 #				if epoch & 50 == 0:
 				check_indices = np.random.choice(num_train, 1000, replace=True)
-				loss = sess.run(cost, feed_dict={self.X: X[check_indices], self.y: y[check_indices], self.dropout: 1.})
-				acc = sess.run(accuracy, feed_dict={self.X: X[:1000], self.y: y[:1000], self.dropout: 1.})
-				print "Epoch : ", epoch, " loss=" , loss, " Training Accuracy=", acc
+				loss = sess.run(
+						cost, 
+						feed_dict={
+							self.X: X[check_indices], 
+							self.y: y[check_indices], 
+							self.dropout: 1.
+						}
+					)
+				acc = sess.run(
+						accuracy, 
+						feed_dict={
+							self.X: X[check_indices], 
+							self.y: y[check_indices], self.dropout: 1.
+						}
+					)
+				print "Epoch ", epoch, "- Time Taken:", (time.time() - start_time)  ,\
+					"sec, Loss:" , loss, ", Training Accuracy:", acc
 			
 			print "Optimization Finishied"
 			saver.save(sess, "./tmp/alexnet_model.ckpt")
