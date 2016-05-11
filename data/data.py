@@ -41,12 +41,14 @@ def load_gender_dataset():
 #		return load(cache_path)
 #	else:
 
+	gender_path = "gender_data/scaled_42x128/"
+
 	# Make Female DataSet
-	female_path = "gender_data/img_female/"
+	female_path = gender_path + "img_female/"
 	female_list = os.listdir(female_path)
 
 	print "Load Female DataSet....."
-	female_data = np.empty((len(female_list), 128, 128, 3))
+	female_data = np.empty((len(female_list), 128, 42, 3))
 	for i in range(len(female_list)):
 		female_data[i,:,:,:] = img2numpy_arr(female_path+female_list[i])
 
@@ -55,11 +57,11 @@ def load_gender_dataset():
 	print "Complete!"
 
 	# Make Male DataSet
-	male_path = "gender_data/img_male/"
+	male_path = gender_path + "img_male/"
 	male_list = os.listdir(male_path)
 
 	print "Load Male DataSet ..."
-	male_data = np.empty((len(male_list), 128, 128, 3))
+	male_data = np.empty((len(male_list), 128, 42, 3))
 	for i in range(len(male_list)):
 		male_data[i,:,:,:] = img2numpy_arr(male_path+male_list[i])
 	
@@ -70,7 +72,7 @@ def load_gender_dataset():
 	dataset = {
 		'data' : np.concatenate((male_data, female_data),axis=0),
 		'label' : np.concatenate((male_label, female_label), axis=0),
-		'geometry': (128, 128),
+		'geometry': (128, 42),
 		'num_classes': 2
 	}
 

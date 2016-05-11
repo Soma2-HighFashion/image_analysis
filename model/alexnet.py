@@ -22,36 +22,44 @@ class AlexNet:
 		
 		# Stage 1 : Convolution -> ReLU -> Max Pooling -> Local Response Normalization -> Dropout
 		conv1_name = "c1"
-		conv1 = self.__conv_relu(input_X, [3, 3, 3, 64], [64], conv1_name)
+		conv1 = self.__conv_relu(input_X, [11, 11, 3, 96], [96], conv1_name)
 		conv1 = self.__max_pooling(conv1, k=2, name=conv1_name)
 		conv1 = self.__local_response_norm(conv1, name=conv1_name)
-		conv1 = self.__dropout(conv1, self.dropout)
+#		conv1 = self.__dropout(conv1, self.dropout)
 
 		# Stage 2 : Convolution -> ReLU -> Max Pooling -> Local Response Normalization -> Dropout
 		conv2_name = "c2"
-		conv2 = self.__conv_relu(conv1, [3, 3, 64, 128], [128], conv2_name)
+		conv2 = self.__conv_relu(conv1, [5, 5, 96, 256], [256], conv2_name)
 		conv2 = self.__max_pooling(conv2, k=2, name=conv2_name)
 		conv2 = self.__local_response_norm(conv2, name=conv2_name)
-		conv2 = self.__dropout(conv2, self.dropout)
+#		conv2 = self.__dropout(conv2, self.dropout)
 		
-		# Stage 3 : Convolution -> ReLU -> Max Pooling -> Local Response Normalization -> Dropout
+		# Stage 3 : Convolution -> ReLU
 		conv3_name = "c3"
-		conv3 = self.__conv_relu(conv2, [3, 3, 128, 256], [256], conv3_name)
-		conv3 = self.__max_pooling(conv3, k=2, name=conv3_name)
-		conv3 = self.__local_response_norm(conv3, name=conv3_name)
-		conv3 = self.__dropout(conv3, self.dropout)
+		conv3 = self.__conv_relu(conv2, [3, 3, 256, 384], [384], conv3_name)
 
-		# Stage 4 : Fully connected : Linear -> ReLU -> Linear
-		input_conv_X = tf.reshape(conv3, [-1, 16*16*256])
+		# Stage 4 : Convolution -> ReLU
+		conv4_name = "c4"
+		conv4 = self.__conv_relu(conv3, [3, 3, 384, 384], [384], conv4_name)
 
-		fc1_name = "f1"
-		fc1 = self.__fc_relu(input_conv_X, [16*16*256, 1024], [1024], fc1_name) 
+		# Stage 5 : Convolution -> ReLU -> Max Pooling -> Local Response Normalization -> Dropout
+		conv5_name = "c5"
+		conv5 = self.__conv_relu(conv4, [3, 3, 384, 256], [256], conv5_name)
+		conv5 = self.__max_pooling(conv5, k=2, name=conv5_name)
+		conv5 = self.__local_response_norm(conv5, name=conv5_name)
+		conv5 = self.__dropout(conv5, self.dropout)
+
+		# Stage 6-7 : Fully connected : Linear+ReLU -> Linear+ReLU -> Linear
+		input_conv_X = tf.reshape(conv5, [-1, 6*16*256])
+
+		fc1_name = "f6"
+		fc1 = self.__fc_relu(input_conv_X, [6*16*256, 4096], [4096], fc1_name) 
 		
-		fc2_name = "f2"
-		fc2 = self.__fc_relu(fc1, [1024, 512], [512], fc2_name) 
+		fc2_name = "f7"
+		fc2 = self.__fc_relu(fc1, [4096, 4096], [4096], fc2_name) 
 
 		out_name = "out"
-		out = self.__linear(fc2, [512, self.num_classes], out_name)
+		out = self.__linear(fc2, [4096, self.num_classes], out_name)
 		return out
 
 	def __conv_relu(self, input, kernel_shape, bias_shape, name):

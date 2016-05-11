@@ -8,15 +8,15 @@ from alexnet import AlexNet
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
-	parser.add_argument('-learning_rate', action='store', dest='learning_rate', type=float, 
+	parser.add_argument('-l', action='store', dest='learning_rate', type=float, 
 			help='Learning Rate')	
-	parser.add_argument('-num_iters', action='store', dest='num_iters', type=int, 
+	parser.add_argument('-n', action='store', dest='num_iters', type=int, 
 			help='Training Iteration Count')
-	parser.add_argument('-batch_size', action='store', dest='batch_size', type=int, 
+	parser.add_argument('-b', action='store', dest='batch_size', type=int, 
 			help='Batch Size => mini-batch')
-	parser.add_argument('-reg', action='store', dest='reg', type=float,
+	parser.add_argument('-r', action='store', dest='reg', type=float,
 			help='Regulizer')
-	parser.add_argument('-dropout', action='store', dest='dropout', type=float,
+	parser.add_argument('-d', action='store', dest='dropout', type=float,
 			help='Dropout Ratio')
 
 	config = parser.parse_args()
@@ -26,6 +26,7 @@ if __name__ == "__main__":
 	print " -  Num Iterations : ", config.num_iters
 	print " -  Batch Size : ", config.batch_size
 	print " -  Regulizer : ", config.reg
+	print " -  Dropout : ", config.dropout
 	print "--------------------------------------------------"
 
 	dataset = data.load_gender_dataset() 
