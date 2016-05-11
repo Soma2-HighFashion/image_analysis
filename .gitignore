@@ -4,3 +4,4 @@ checkpoint
 gender_data/
 *.pyc
 tmp/
+mnist_data/
