@@ -1,2 +1,2 @@
-model_checkpoint_path: "alexnet_model.ckpt"
-all_model_checkpoint_paths: "alexnet_model.ckpt"
+model_checkpoint_path: "model_vgg-28500"
+all_model_checkpoint_paths: "model_vgg-28500"

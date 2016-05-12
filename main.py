@@ -18,6 +18,8 @@ if __name__ == "__main__":
 			help='Regulizer')
 	parser.add_argument('-d', action='store', dest='dropout', type=float,
 			help='Dropout Ratio')
+	parser.add_argument('-p', action='store', dest='log_path', type=str,
+			help='Log, Model Path')
 
 	config = parser.parse_args()
 
@@ -27,11 +29,12 @@ if __name__ == "__main__":
 	print " -  Batch Size : ", config.batch_size
 	print " -  Regulizer : ", config.reg
 	print " -  Dropout : ", config.dropout
+	print " -  Log, Model Path : ", config.log_path
 	print "--------------------------------------------------"
 
 	dataset = data.load_gender_dataset() 
 
-	model = AlexNet(dataset['geometry'], dataset['num_classes'])
+	model = AlexNet(dataset['geometry'], dataset['num_classes'], config.log_path)
 	model.train(dataset['data'], dataset['label'], 
 			learning_rate=config.learning_rate, num_iters=config.num_iters, 
 			batch_size=config.batch_size, dropout_prob=config.dropout, 

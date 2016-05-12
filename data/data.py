@@ -6,8 +6,70 @@ import os
 from PIL import Image
 import numpy as np
 
+def load_gender_dataset():
+	# Return dataset - numpy array, label 
+	# 0 : Femail / 1 : Male
+
+	gender_path = "/home/dj/HighFashionProject/image_analysis/gender_data/scaled_84x256/"
+	geometry = (256, 84)
+
+	patch_geometry = (84, 84)
+	patch_count = 5
+
+	# Make Female DataSet
+	female_path = gender_path + "img_female/"
+	female_list = os.listdir(female_path)
+	female_count = len(female_list) * patch_count
+	
+	male_path = gender_path + "img_male/"
+	male_list = os.listdir(male_path)
+	male_count = len(male_list) * patch_count
+
+	img_data = np.empty((female_count+male_count, patch_geometry[0], patch_geometry[1], 3))
+	label_data = np.zeros((female_count+male_count, 2), dtype="uint8")
+
+	print "Load Female DataSet....."
+	for i in range(len(female_list)):
+		patch_images = generate_patches(img2numpy_arr(female_path+female_list[i]))
+		for j in range(patch_count):
+			img_data[(i*patch_count)+j,:,:,:] = patch_images[j]	
+
+	label_data[:female_count, 0] = 1
+	print "Complete!"
+
+	# Make Male DataSet
+
+	print "Load Male DataSet ..."
+	for i in range(len(male_list)):
+		patch_images = generate_patches(img2numpy_arr(male_path+male_list[i]))
+		for j in range(patch_count):
+			img_data[female_count+(i*patch_count)+j,:,:,:] = patch_images[j]	
+	label_data[female_count+1:, 1] = 1
+	print "Complete!"				
+
+	dataset = {
+		'data' : img_data,
+		'label' : label_data,
+		'geometry': patch_geometry,
+		'num_classes': 2
+	}
+
+	print "dataset : ", img_data.shape, " label : ", label_data.shape
+
+#	print "Save to Pickle data for cache"
+#	save2p(dataset, cache_path)
+	return dataset 
+
 def img2numpy_arr(img_path):
 	return np.array(Image.open(img_path))
+
+def generate_patches(ndarr):
+	geometry = (256, 84)
+	patch_geometry = (84, 84)
+	patch_count = 5
+
+	step = (geometry[0] - patch_geometry[0]) / (patch_count-1)
+	return [ndarr[i*step:i*step+patch_geometry[0], :, : ] for i in range(patch_count)]
 
 def save2p(data, fname):
 	try:
@@ -30,52 +92,4 @@ def load(fname):
 	finally:
 		return savedItems
 
-def load_gender_dataset():
-	# Return dataset - numpy array, label 
-	# 0 : Femail / 1 : Male
 
-# Pickle Memory Error
-#cache_path = "gender_data/gender_dataset.p"
-#	if os.path.isfile(cache_path):
-#		print "Load data cache!"
-#		return load(cache_path)
-#	else:
-
-	gender_path = "gender_data/scaled_42x128/"
-
-	# Make Female DataSet
-	female_path = gender_path + "img_female/"
-	female_list = os.listdir(female_path)
-
-	print "Load Female DataSet....."
-	female_data = np.empty((len(female_list), 128, 42, 3))
-	for i in range(len(female_list)):
-		female_data[i,:,:,:] = img2numpy_arr(female_path+female_list[i])
-
-	female_label = np.zeros((len(female_list), 2), dtype="uint8")
-	female_label[:, 0] = 1
-	print "Complete!"
-
-	# Make Male DataSet
-	male_path = gender_path + "img_male/"
-	male_list = os.listdir(male_path)
-
-	print "Load Male DataSet ..."
-	male_data = np.empty((len(male_list), 128, 42, 3))
-	for i in range(len(male_list)):
-		male_data[i,:,:,:] = img2numpy_arr(male_path+male_list[i])
-	
-	male_label = np.zeros((len(male_list), 2), dtype="uint8")
-	male_label[:, 1] = 1
-	print "Complete!"				
-
-	dataset = {
-		'data' : np.concatenate((male_data, female_data),axis=0),
-		'label' : np.concatenate((male_label, female_label), axis=0),
-		'geometry': (128, 42),
-		'num_classes': 2
-	}
-
-#	print "Save to Pickle data for cache"
-#	save2p(dataset, cache_path)
-	return dataset 

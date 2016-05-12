@@ -7,9 +7,10 @@ import numpy as np
 
 class AlexNet:
 
-	def __init__(self, geometry, num_classes):
+	def __init__(self, geometry, num_classes, log_path):
 		self.geometry = geometry
 		self.num_classes = num_classes
+		self.log_path = log_path
 		
 		# Tensor Flow Graph Input
 		self.X = tf.placeholder(tf.float32, [None, self.geometry[0], self.geometry[1], 3])
@@ -24,14 +25,14 @@ class AlexNet:
 		conv1_name = "c1"
 		conv1 = self.__conv_relu(input_X, [11, 11, 3, 96], [96], conv1_name)
 		conv1 = self.__max_pooling(conv1, k=2, name=conv1_name)
-		conv1 = self.__local_response_norm(conv1, name=conv1_name)
+#		conv1 = self.__local_response_norm(conv1, name=conv1_name)
 #		conv1 = self.__dropout(conv1, self.dropout)
 
 		# Stage 2 : Convolution -> ReLU -> Max Pooling -> Local Response Normalization -> Dropout
 		conv2_name = "c2"
 		conv2 = self.__conv_relu(conv1, [5, 5, 96, 256], [256], conv2_name)
 		conv2 = self.__max_pooling(conv2, k=2, name=conv2_name)
-		conv2 = self.__local_response_norm(conv2, name=conv2_name)
+#		conv2 = self.__local_response_norm(conv2, name=conv2_name)
 #		conv2 = self.__dropout(conv2, self.dropout)
 		
 		# Stage 3 : Convolution -> ReLU
@@ -46,14 +47,14 @@ class AlexNet:
 		conv5_name = "c5"
 		conv5 = self.__conv_relu(conv4, [3, 3, 384, 256], [256], conv5_name)
 		conv5 = self.__max_pooling(conv5, k=2, name=conv5_name)
-		conv5 = self.__local_response_norm(conv5, name=conv5_name)
+#		conv5 = self.__local_response_norm(conv5, name=conv5_name)
 		conv5 = self.__dropout(conv5, self.dropout)
 
 		# Stage 6-7 : Fully connected : Linear+ReLU -> Linear+ReLU -> Linear
-		input_conv_X = tf.reshape(conv5, [-1, 6*16*256])
+		input_conv_X = tf.reshape(conv5, [-1, 11*11*256])
 
 		fc1_name = "f6"
-		fc1 = self.__fc_relu(input_conv_X, [6*16*256, 4096], [4096], fc1_name) 
+		fc1 = self.__fc_relu(input_conv_X, [11*11*256, 4096], [4096], fc1_name) 
 		
 		fc2_name = "f7"
 		fc2 = self.__fc_relu(fc1, [4096, 4096], [4096], fc2_name) 
@@ -112,7 +113,7 @@ class AlexNet:
 		with tf.Session() as sess:
 			sess.run(init)
 
-			writer = tf.train.SummaryWriter("/tmp/tb_test", sess.graph)
+			writer = tf.train.SummaryWriter(self.log_path + "/log", sess.graph)
 			
 			# Train
 			for epoch in range(1, num_iters+1):
@@ -163,7 +164,7 @@ class AlexNet:
 					"sec, Loss:" , loss, ", Training Accuracy:", acc
 			
 			print "Optimization Finishied"
-			saver.save(sess, "./tmp/alexnet_model.ckpt")
+			saver.save(sess, self.log_path + "model/alexnet_model.ckpt")
 			
 	def predict(self, X, y):
 		# Evaluate model
@@ -173,5 +174,5 @@ class AlexNet:
 
 		saver = tf.train.Saver()
 		with tf.Session() as sess:
-			saver.restore(sess, "./tmp/alexnet_model.ckpt")
+			saver.restore(sess, self.log_path + "model/alexnet_model.ckpt")
 			print sess.run(accuracy, feed_dict={self.X: X, self.y: y, self.dropout: 1. })
