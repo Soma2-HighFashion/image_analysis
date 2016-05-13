@@ -10,7 +10,7 @@ Links:
     http://arxiv.org/pdf/1409.1556
 """
 
-#from __future__ import division, print_function, absolute_import
+from __future__ import division, print_function, absolute_import
 
 import sys
 sys.path.append('./data')
@@ -20,7 +20,7 @@ dataset = data.load_gender_dataset()
 X = dataset['data']
 y = dataset['label']
 
-import tflearn
+import tflearn as tl
 from tflearn.layers.core import input_data, dropout, fully_connected
 from tflearn.layers.conv import conv_2d, max_pool_2d
 from tflearn.layers.estimator import regression
@@ -66,8 +66,7 @@ network = regression(network, optimizer='rmsprop',
                      learning_rate=0.00001)
 
 # Training
-model = tflearn.DNN(network, checkpoint_path='model_vgg',
-                    max_checkpoints=1, tensorboard_verbose=0)
-model.fit(X, y, n_epoch=500, shuffle=True,
+model = tl.DNN(network, checkpoint_path='vgg_gender_model', max_checkpoints=1, tensorboard_verbose=3)
+model.fit(X, y, n_epoch=50, shuffle=True,
           show_metric=True, batch_size=32, snapshot_step=500,
           snapshot_epoch=False, run_id='vgg_gender')
