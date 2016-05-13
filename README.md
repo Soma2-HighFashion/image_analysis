@@ -1,6 +1,6 @@
 ## Street Snap Image Analysis
 
-### Gender Classifier
+### 1.Gender Classifier
 
 #### Classes
 - 0 : Female
@@ -8,27 +8,23 @@
 
 #### Model
 
-1. **AlexNet**
+1. **AlexNet** [paper](https://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks.pdf)
 
-[paper](https://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks.pdf)
+	##### Event
 
-##### Detail
+	- Accuracy
 
-- Accuracy
+	![images](images/gender_alexnet_accuracy.png)
 
-![images](images/gender_alexnet_accuracy.png)
+	- Loss
 
-- Loss
+	![images](images/gender_alexnet_loss.png)
 
-![images](images/gender_alexnet_loss.png)
-
-AlexNet is not enough!
+	AlexNet is not enough!
 
 2. **VGG**
 
-##### History
-
-### Category
+### 2.Category Classifier
 
 #### Classes
 - 0 : Street
