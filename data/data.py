@@ -14,42 +14,34 @@ def load_gender_dataset():
     # Return dataset - numpy array, label
     # 0 : Femail / 1 : Male
 
+	num_classes = 2
     gender_path = "/home/dj/HighFashionProject/image_analysis/gender_data/scaled_84x256/"
 
-    # Make Female & Male DataSet
-    female_path = gender_path + "img_female/"
-    female_list = os.listdir(female_path)
-    female_count = len(female_list) * PATCH_COUNT
+    female_path = gender_path + "img_female/";  female_label = 0
+    male_path = gender_path + "img_male/";      male_label = 1
 
-    male_path = gender_path + "img_male/"
-    male_list = os.listdir(male_path)
-    male_count = len(male_list) * PATCH_COUNT
+    path_label_list = [(female_path, female_label), (male_path, male_label)]
+    dataset_list = map(lambda (p,l): dir2arr(p, l, num_classes))
+    total_count = sum(map(lambda (img,label): label.shape[0], dataset_list))
 
-    img_data = np.empty((female_count+male_count, PATCH_GEOMETRY[0], PATCH_GEOMETRY[1], 3))
-    label_data = np.zeros((female_count+male_count, 2), dtype="uint8")
+    img_data = np.empty((total_count, PATCH_GEOMETRY[0], PATCH_GEOMETRY[1], 3))
+    label_data = label_data = np.zeros((total_count, num_classes), dtype="uint8")
 
-    print "Load Female DataSet....."
-    for i in range(len(female_list)):
-        patch_images = generate_patches(img2numpy_arr(female_path+female_list[i]))
-        for j in range(PATCH_COUNT):
-            img_data[(i*PATCH_COUNT)+j,:,:,:] = patch_images[j]
+    index = 0
+    for i in range(num_classes):
+        imgs, labels = dataset[i]
+        data_count = label.shape[0]
 
-    label_data[:female_count, 0] = 1
-    print "Complete!"
+        img_data[index:index+data_count, :, :, :] = imgs
+        label_data[index:index+data_count, :, :, :] = label_data
 
-    print "Load Male DataSet ..."
-    for i in range(len(male_list)):
-        patch_images = generate_patches(img2numpy_arr(male_path+male_list[i]))
-        for j in range(PATCH_COUNT):
-            img_data[female_count+(i*PATCH_COUNT)+j,:,:,:] = patch_images[j]
-    label_data[female_count+1:, 1] = 1
-    print "Complete!"
+        index += data_count
 
     dataset = {
         'data' : img_data,
         'label' : label_data,
         'geometry': PATCH_GEOMETRY,
-        'num_classes': 2
+        'num_classes': num_classes
     }
 
     print "dataset : ", img_data.shape, " label : ", label_data.shape
