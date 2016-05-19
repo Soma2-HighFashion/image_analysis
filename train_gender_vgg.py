@@ -66,7 +66,7 @@ network = regression(network, optimizer='rmsprop',
                      learning_rate=0.00001)
 
 # Training
-model = tl.DNN(network, checkpoint_path='vgg_gender_model', max_checkpoints=1, tensorboard_verbose=3)
+model = tl.DNN(network, checkpoint_path='vgg_gender_model', max_checkpoints=1, tensorboard_verbose=1)
 model.fit(X, y, n_epoch=50, shuffle=True,
           show_metric=True, batch_size=32, snapshot_step=500,
           snapshot_epoch=False, run_id='vgg_gender')
