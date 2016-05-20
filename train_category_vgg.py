@@ -25,10 +25,6 @@ from tflearn.layers.core import input_data, dropout, fully_connected
 from tflearn.layers.conv import conv_2d, max_pool_2d
 from tflearn.layers.estimator import regression
 
-# Data loading and preprocessing
-#import tflearn.datasets.oxflower17 as oxflower17
-#X, Y = oxflower17.load_data(one_hot=True)
-
 # Building 'VGG Network'
 network = input_data(shape=[None, 84, 84, 3])
 
