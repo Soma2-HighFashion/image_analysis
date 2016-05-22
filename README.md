@@ -24,6 +24,16 @@
 
 2. **VGG**
 
+	##### Event
+
+	- Accuracy
+
+	![images](images/gender_vgg_accuracy.png)
+
+	- Loss
+
+	![images](images/gender_vgg_loss.png)
+
 ### 2.Category Classifier
 
 #### Classes
@@ -33,3 +43,17 @@
 - 3 : Unique
 - 4 : Work wear
 - 5 : Classic
+
+1. **VGG**
+
+	##### Event
+
+	- Accuracy
+
+	![images](images/category_vgg_accuracy.png)
+
+	- Loss
+
+	![images](images/category_vgg_loss.png)
+
+
