@@ -1,2 +1,2 @@
-model_checkpoint_path: "vgg_category_model-42500"
-all_model_checkpoint_paths: "vgg_category_model-42500"
+model_checkpoint_path: "vgg_category_model-130000"
+all_model_checkpoint_paths: "vgg_category_model-130000"

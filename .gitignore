@@ -5,4 +5,5 @@ gender_data/
 *.pyc
 tmp/
 mnist_data/
-*model
+*_model*
+*.meta

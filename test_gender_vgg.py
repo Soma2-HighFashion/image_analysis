@@ -14,59 +14,63 @@ from __future__ import division, print_function, absolute_import
 
 import sys
 sys.path.append('./data')
-import data
+from data import generate_patches, img2numpy_arr
 
-dataset = data.load_gender_dataset()
-X = dataset['data']
-y = dataset['label']
-
+import argparse
+import numpy as np
 import tflearn as tl
 from tflearn.layers.core import input_data, dropout, fully_connected
 from tflearn.layers.conv import conv_2d, max_pool_2d
 from tflearn.layers.estimator import regression
 
-# Data loading and preprocessing
-#import tflearn.datasets.oxflower17 as oxflower17
-#X, Y = oxflower17.load_data(one_hot=True)
+if __name__ == "__main__":
+	parser = argparse.ArgumentParser()
+	parser.add_argument('-test_path', action='store', dest='test_path', type=str, 
+			help='Test Data Path')	
+	config = parser.parse_args()
 
-# Building 'VGG Network'
-network = input_data(shape=[None, 84, 84, 3])
+	# Load Test Data
+	X = generate_patches(img2numpy_arr(config.test_path))
 
-network = conv_2d(network, 64, 3, activation='relu')
-network = conv_2d(network, 64, 3, activation='relu')
-network = max_pool_2d(network, 2, strides=2)
+	# Building 'VGG Network'
+	network = input_data(shape=[None, 84, 84, 3])
 
-network = conv_2d(network, 128, 3, activation='relu')
-network = conv_2d(network, 128, 3, activation='relu')
-network = max_pool_2d(network, 2, strides=2)
+	network = conv_2d(network, 64, 3, activation='relu')
+	network = conv_2d(network, 64, 3, activation='relu')
+	network = max_pool_2d(network, 2, strides=2)
 
-network = conv_2d(network, 256, 3, activation='relu')
-network = conv_2d(network, 256, 3, activation='relu')
-network = conv_2d(network, 256, 3, activation='relu')
-network = max_pool_2d(network, 2, strides=2)
+	network = conv_2d(network, 128, 3, activation='relu')
+	network = conv_2d(network, 128, 3, activation='relu')
+	network = max_pool_2d(network, 2, strides=2)
 
-network = conv_2d(network, 512, 3, activation='relu')
-network = conv_2d(network, 512, 3, activation='relu')
-network = conv_2d(network, 512, 3, activation='relu')
-network = max_pool_2d(network, 2, strides=2)
+	network = conv_2d(network, 256, 3, activation='relu')
+	network = conv_2d(network, 256, 3, activation='relu')
+	network = conv_2d(network, 256, 3, activation='relu')
+	network = max_pool_2d(network, 2, strides=2)
 
-network = conv_2d(network, 512, 3, activation='relu')
-network = conv_2d(network, 512, 3, activation='relu')
-network = conv_2d(network, 512, 3, activation='relu')
-network = max_pool_2d(network, 2, strides=2)
+	network = conv_2d(network, 512, 3, activation='relu')
+	network = conv_2d(network, 512, 3, activation='relu')
+	network = conv_2d(network, 512, 3, activation='relu')
+	network = max_pool_2d(network, 2, strides=2)
 
-network = fully_connected(network, 4096, activation='relu')
-network = dropout(network, 0.5)
-network = fully_connected(network, 4096, activation='relu')
-network = dropout(network, 0.5)
-network = fully_connected(network, 2, activation='softmax')
+	network = conv_2d(network, 512, 3, activation='relu')
+	network = conv_2d(network, 512, 3, activation='relu')
+	network = conv_2d(network, 512, 3, activation='relu')
+	network = max_pool_2d(network, 2, strides=2)
 
-network = regression(network, optimizer='rmsprop',
-                     loss='categorical_crossentropy',
-                     learning_rate=0.00001)
+	network = fully_connected(network, 4096, activation='relu')
+	network = dropout(network, 0.5)
+	network = fully_connected(network, 4096, activation='relu')
+	network = dropout(network, 0.5)
+	network = fully_connected(network, 2, activation='softmax')
 
-# Training
-model = tl.DNN(network, checkpoint_path='vgg_gender_model', max_checkpoints=1, tensorboard_verbose=3)
+	network = regression(network, optimizer='rmsprop',
+						 loss='categorical_crossentropy',
+						 learning_rate=0.00001)
 
-model.load('vgg_gender_model_..')
-model.predict(X)
+	# Model
+	model = tl.DNN(network)
+
+	model.load('vgg_gender_model-80000')
+	pred_y = model.predict(X)
+	print(pred_y)

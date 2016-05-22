@@ -23,6 +23,19 @@ def load_gender_dataset():
 	path_label_list = [(female_path, female_label), (male_path, male_label)]
 	return build_image_dataset(path_label_list, num_classes)
 
+def load_gender_test_dataset():
+    # Return dataset - numpy array, label
+    # 0 : Femail / 1 : Male
+
+	num_classes = 2
+	gender_path = "/home/dj/HighFashionProject/image_analysis/gender_data/scaled_84x256/"
+
+	female_path = gender_path + "img_test_female/";  female_label = 0
+	male_path = gender_path + "img_test_male/";      male_label = 1
+
+	path_label_list = [(female_path, female_label), (male_path, male_label)]
+	return build_image_dataset(path_label_list, num_classes)
+
 def load_category_dataset():
     # Return dataset - numpy array, label
     # Labels =>

@@ -63,6 +63,7 @@ network = regression(network, optimizer='rmsprop',
 
 # Training
 model = tl.DNN(network, checkpoint_path='vgg_category_model', max_checkpoints=1, tensorboard_verbose=1)
+model.load('vgg_category_model-13000') 
 model.fit(X, y, n_epoch=50, shuffle=True,
           show_metric=True, batch_size=32, snapshot_step=500,
           snapshot_epoch=False, run_id='vgg_category')
