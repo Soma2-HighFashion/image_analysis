@@ -6,9 +6,11 @@ import os
 from PIL import Image
 import numpy as np
 
-GEOMETRY = (256, 84)
-PATCH_GEOMETRY = (84, 84)
-PATCH_COUNT = 5
+#GEOMETRY = (256, 84)
+GEOMETRY = (128, 42)
+#PATCH_GEOMETRY = (84, 84)
+PATCH_GEOMETRY = (42, 42)
+PATCH_COUNT = 20
 
 def load_gender_dataset():
     # Return dataset - numpy array, label
@@ -55,6 +57,54 @@ def load_category_dataset():
                        (unique_path, unique_label), (workwear_path, workwear_label), (classic_path, classic_label)]
     
     return build_image_dataset(path_label_list, num_classes)
+
+def load_discriminate_dataset():
+    # Return dataset - numpy array, label
+    # Labels =>
+    #	0: Bad / 1: Good
+
+	num_classes = 2
+	discriminate_path = "/home/dj/HighFashionProject/image_analysis/discriminate_data/"
+
+	good_path = discriminate_path + "vc_good/";		good_label = 1
+	bad_path = discriminate_path + "vc_bad/";		bad_label = 0
+
+	pl_list = [(good_path, good_label), (bad_path, bad_label)]
+
+	return build_image_dataset(pl_list, num_classes)
+
+def load_analysis_dataset():
+    # Return dataset - numpy array, label
+    # Labels =>
+    #	0 ~ 4 : Female / 5 ~ 9 : Male
+	#  0,5 : Street / 1,6: Casual / 2,7 : Classic / 3,8 : Unique / 4 : Sexy
+
+	num_classes = 9
+	analysis_path = "/home/dj/HighFashionProject/image_analysis/analysis_data/"
+	female = "female/"; male = "male/"
+	street = "img_street/"; casual = "img_casual/"; classic = "img_classic/"
+	unique = "img_unique/"; sexy = "img_sexy/"
+
+	f_street_path = analysis_path + female + street;	f_street_label = 0
+	f_casual_path = analysis_path + female + casual;	f_casual_label = 1
+	f_classic_path = analysis_path + female + classic;	f_classic_label = 2
+	f_unique_path = analysis_path + female + unique;	f_unique_label = 3
+	f_sexy_path = analysis_path + female + sexy;	f_sexy_label = 4
+
+	m_street_path = analysis_path + male + street;	m_street_label = 5
+	m_casual_path = analysis_path + male + casual;	m_casual_label = 6
+	m_classic_path = analysis_path + male + classic;	m_classic_label = 7
+	m_unique_path = analysis_path + male + unique;	m_unique_label = 8
+
+	pl_list = [
+		(f_street_path, f_street_label), (f_casual_path, f_casual_label),
+		(f_classic_path, f_classic_label), (f_unique_path, f_unique_label),
+		(f_sexy_path, f_sexy_label), (m_street_path, m_street_label),
+		(m_casual_path, m_casual_label), (m_classic_path, m_classic_label),
+		(m_unique_path, m_unique_label)
+	]
+
+	return build_image_dataset(pl_list, num_classes)
 
 def dir2arr(dir_path, label_value, num_classes):
 	print("Load Data Path...   " + os.path.basename(os.path.normpath(dir_path)) )

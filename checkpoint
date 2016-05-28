@@ -1,2 +1,4 @@
-model_checkpoint_path: "vgg_category_model-130000"
-all_model_checkpoint_paths: "vgg_category_model-130000"
+model_checkpoint_path: "analysis_model-8400"
+all_model_checkpoint_paths: "analysis_model-7800"
+all_model_checkpoint_paths: "analysis_model-8100"
+all_model_checkpoint_paths: "analysis_model-8400"
