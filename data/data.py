@@ -6,11 +6,8 @@ import os
 from PIL import Image
 import numpy as np
 
-#GEOMETRY = (256, 84)
 GEOMETRY = (128, 42)
-#PATCH_GEOMETRY = (84, 84)
 PATCH_GEOMETRY = (42, 42)
-PATCH_COUNT = 20
 
 def load_gender_dataset():
     # Return dataset - numpy array, label
@@ -69,9 +66,9 @@ def load_discriminate_dataset():
 	good_path = discriminate_path + "vc_good/";		good_label = 1
 	bad_path = discriminate_path + "vc_bad/";		bad_label = 0
 
+	patch_count = 50
 	pl_list = [(good_path, good_label), (bad_path, bad_label)]
-
-	return build_image_dataset(pl_list, num_classes)
+	return build_image_dataset(pl_list, num_classes, patch_count)
 
 def load_analysis_dataset():
     # Return dataset - numpy array, label
@@ -96,6 +93,7 @@ def load_analysis_dataset():
 	m_classic_path = analysis_path + male + classic;	m_classic_label = 7
 	m_unique_path = analysis_path + male + unique;	m_unique_label = 8
 
+	patch_count = 20
 	pl_list = [
 		(f_street_path, f_street_label), (f_casual_path, f_casual_label),
 		(f_classic_path, f_classic_label), (f_unique_path, f_unique_label),
@@ -103,28 +101,27 @@ def load_analysis_dataset():
 		(m_casual_path, m_casual_label), (m_classic_path, m_classic_label),
 		(m_unique_path, m_unique_label)
 	]
+	return build_image_dataset(pl_list, num_classes, patch_count)
 
-	return build_image_dataset(pl_list, num_classes)
-
-def dir2arr(dir_path, label_value, num_classes):
+def dir2arr(dir_path, label_value, num_classes, patch_count):
 	print("Load Data Path...   " + os.path.basename(os.path.normpath(dir_path)) )
 	dir_list = os.listdir(dir_path)
-	dir_count = len(dir_list)*PATCH_COUNT
+	dir_count = len(dir_list)*patch_count
 
 	img_data = np.empty((dir_count, PATCH_GEOMETRY[0], PATCH_GEOMETRY[1], 3))
 	label_data = np.zeros((dir_count, num_classes), dtype="uint8")
 
 	for i in range(len(dir_list)):
 		patch_images = generate_patches(img2numpy_arr(dir_path+dir_list[i]))
-		for j in range(PATCH_COUNT):
-			img_data[(i*PATCH_COUNT)+j,:,:,:] = patch_images[j]
+		for j in range(patch_count):
+			img_data[(i*patch_count)+j,:,:,:] = patch_images[j]
 
 	targets = np.full((dir_count), label_value, dtype="uint8")
 	label_data[np.arange(targets.shape[0]), targets] = 1
 	return (img_data, label_data)
 
-def build_image_dataset(path_label_list, num_classes):
-	dataset_list = map(lambda (p,l): dir2arr(p, l, num_classes), path_label_list)
+def build_image_dataset(path_label_list, num_classes, patch_count):
+	dataset_list = map(lambda (p,l): dir2arr(p, l, num_classes, patch_count), path_label_list)
 	total_count = sum(map(lambda (img,label): label.shape[0], dataset_list))
 
 	img_data = np.empty((total_count, PATCH_GEOMETRY[0], PATCH_GEOMETRY[1], 3), dtype="float32")
@@ -135,11 +132,12 @@ def build_image_dataset(path_label_list, num_classes):
 		imgs, labels = dataset_list[i]
 		data_count = labels.shape[0]
 
-		imgs /= 255
 		img_data[index:index+data_count, :, :, :] = imgs	
 		label_data[index:index+data_count, :] = labels
 			
 		index += data_count
+
+	imgs /= 255
 
 	dataset = {
 		'data' : img_data,
@@ -153,9 +151,9 @@ def build_image_dataset(path_label_list, num_classes):
 def img2numpy_arr(img_path):
     return np.array(Image.open(img_path))
 
-def generate_patches(ndarr):
-    step = (GEOMETRY[0] - PATCH_GEOMETRY[0]) / (PATCH_COUNT-1)
-    return [ndarr[i*step:i*step+PATCH_GEOMETRY[0], :, : ] for i in range(PATCH_COUNT)]
+def generate_patches(ndarr, patch_count):
+    step = (GEOMETRY[0] - PATCH_GEOMETRY[0]) / (patch_count-1)
+    return [ndarr[i*step:i*step+PATCH_GEOMETRY[0], :, : ] for i in range(patch_count)]
 
 def save2p(data, fname):
     try:

@@ -23,17 +23,22 @@ print("Train Data : ", train_X.shape, train_y.shape)
 network = input_data(shape=[None, 42, 42, 3], name='input')
 
 network = conv_2d(network, 16, 3, activation='relu')
+network = conv_2d(network, 16, 3, activation='relu')
 network = max_pool_2d(network, 2, strides=2)
 
+network = conv_2d(network, 64, 3, activation='relu')
 network = conv_2d(network, 64, 3, activation='relu')
 network = max_pool_2d(network, 2, strides=2)
 
 network = conv_2d(network, 64, 3, activation='relu')
-network = max_pool_2d(network, 2, strides=2)
-
 network = conv_2d(network, 64, 3, activation='relu')
 network = max_pool_2d(network, 2, strides=2)
 
+network = conv_2d(network, 64, 3, activation='relu')
+network = conv_2d(network, 64, 3, activation='relu')
+network = max_pool_2d(network, 2, strides=2)
+
+network = conv_2d(network, 64, 3, activation='relu')
 network = conv_2d(network, 64, 3, activation='relu')
 network = max_pool_2d(network, 2, strides=2)
 
@@ -45,11 +50,12 @@ network = fully_connected(network, 9, activation='softmax')
 
 network = regression(network, optimizer='adam',
 					 loss='categorical_crossentropy',
-					 learning_rate=0.0005, name='target')
+					 learning_rate=0.0001, name='target')
 
 # Model
 model = tl.DNN(network, checkpoint_path='analysis_model', max_checkpoints=3, tensorboard_verbose=1)
-model.fit({'input': train_X}, {'target': train_y}, n_epoch=50, shuffle=True,
-          show_metric=True, batch_size=32, snapshot_step=300,
+model.load('analysis_model-588900')
+model.fit({'input': train_X}, {'target': train_y}, n_epoch=100, shuffle=True,
+          show_metric=True, batch_size=128, snapshot_step=300,
           snapshot_epoch=False, run_id='convnet_anaysis')
 
