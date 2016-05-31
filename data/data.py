@@ -112,7 +112,7 @@ def dir2arr(dir_path, label_value, num_classes, patch_count):
 	label_data = np.zeros((dir_count, num_classes), dtype="uint8")
 
 	for i in range(len(dir_list)):
-		patch_images = generate_patches(img2numpy_arr(dir_path+dir_list[i]))
+		patch_images = generate_patches(img2numpy_arr(dir_path+dir_list[i]), patch_count)
 		for j in range(patch_count):
 			img_data[(i*patch_count)+j,:,:,:] = patch_images[j]
 

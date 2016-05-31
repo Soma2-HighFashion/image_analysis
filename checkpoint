@@ -1,4 +1,2 @@
-model_checkpoint_path: "analysis_model-828900"
-all_model_checkpoint_paths: "analysis_model-828300"
-all_model_checkpoint_paths: "analysis_model-828600"
-all_model_checkpoint_paths: "analysis_model-828900"
+model_checkpoint_path: "resnet_analysis-500"
+all_model_checkpoint_paths: "resnet_analysis-500"
