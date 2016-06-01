@@ -77,7 +77,7 @@ def load_analysis_dataset():
 	#  0,5 : Street / 1,6: Casual / 2,7 : Classic / 3,8 : Unique / 4 : Sexy
 
 	num_classes = 9
-	analysis_path = "/home/dj/HighFashionProject/image_analysis/analysis_data/"
+	analysis_path = "/home/dj/HighFashionProject/image_analysis/analysis_data2/"
 	female = "female/"; male = "male/"
 	street = "img_street/"; casual = "img_casual/"; classic = "img_classic/"
 	unique = "img_unique/"; sexy = "img_sexy/"
@@ -93,7 +93,7 @@ def load_analysis_dataset():
 	m_classic_path = analysis_path + male + classic;	m_classic_label = 7
 	m_unique_path = analysis_path + male + unique;	m_unique_label = 8
 
-	patch_count = 20
+	patch_count = 15
 	pl_list = [
 		(f_street_path, f_street_label), (f_casual_path, f_casual_label),
 		(f_classic_path, f_classic_label), (f_unique_path, f_unique_label),
