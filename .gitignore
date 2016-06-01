@@ -1,9 +1,11 @@
-category_data/
 checkpoint*
 .ipynb_checkpoints/
-gender_data/
 *.pyc
-tmp/
-mnist_data/
 *_model*
 *.meta
+tmp/
+gender_data/
+category_data/
+mnist_data/
+analysis_data/
+discriminate_data/
