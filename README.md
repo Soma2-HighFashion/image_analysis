@@ -37,12 +37,11 @@
 ### 2.Category Classifier
 
 #### Classes
-- 0 : Street
-- 1 : Casual
-- 2 : Sexy
-- 3 : Unique
-- 4 : Work wear
-- 5 : Classic
+- 1 : Hiphop, Street
+- 2 : Casual
+- 3 : Classic, Suit
+- 4 : Unique
+- 5 : Sexy
 
 1. **VGG**
 
@@ -56,4 +55,5 @@
 
 	![images](images/category_vgg_loss.png)
 
+2. **ResNet**
 
